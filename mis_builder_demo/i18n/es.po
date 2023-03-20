@@ -9,15 +9,15 @@ msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2018-01-13 15:37+0000\n"
-"PO-Revision-Date: 2020-07-27 10:19+0000\n"
-"Last-Translator: Daniel Martinez Vila <daniel.martinez@qubiq.es>\n"
+"PO-Revision-Date: 2019-02-04 17:50+0000\n"
+"Last-Translator: Marta Vázquez Rodríguez <vazrodmar@gmail.com>\n"
 "Language-Team: Spanish (https://www.transifex.com/oca/teams/23907/es/)\n"
 "Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.10\n"
+"X-Generator: Weblate 3.4\n"
 
 #. module: mis_builder_demo
 #: model:mis.report.instance.period,name:mis_builder_demo.mis_report_instance_expenses_bud
@@ -36,8 +36,9 @@ msgstr "Cuenta Analítica"
 
 #. module: mis_builder_demo
 #: model:ir.model.fields,field_description:mis_builder_demo.field_mis_committed_purchase__analytic_tag_ids
+#, fuzzy
 msgid "Analytic Tags"
-msgstr "Etiquetas analíticas"
+msgstr "Cuenta Analítica"
 
 #. module: mis_builder_demo
 #: model:mis.report.instance.period,name:mis_builder_demo.mis_report_instance_expenses_avail
@@ -121,8 +122,9 @@ msgstr "M-2"
 
 #. module: mis_builder_demo
 #: model:ir.model,name:mis_builder_demo.model_mis_committed_purchase
+#, fuzzy
 msgid "MIS Commitment"
-msgstr "Compromiso MIS"
+msgstr "MIS Consignado a compra"
 
 #. module: mis_builder_demo
 #: model:ir.model.fields,field_description:mis_builder_demo.field_mis_committed_purchase__name
@@ -137,12 +139,12 @@ msgstr "Otro"
 #. module: mis_builder_demo
 #: model:ir.model.fields,field_description:mis_builder_demo.field_mis_committed_purchase__res_id
 msgid "Resource ID"
-msgstr "ID de recurso"
+msgstr ""
 
 #. module: mis_builder_demo
 #: model:ir.model.fields,field_description:mis_builder_demo.field_mis_committed_purchase__res_model
 msgid "Resource Model Name"
-msgstr "Nombre del modelo de recurso"
+msgstr ""
 
 #. module: mis_builder_demo
 #: model:mis.report.kpi,description:mis_builder_demo.mis_report_expenses_kpi_total

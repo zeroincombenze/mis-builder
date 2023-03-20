@@ -14,12 +14,7 @@ import pytz
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 from odoo.models import expression as osv_expression
-from odoo.tools.safe_eval import (
-    datetime as safe_datetime,
-    dateutil as safe_dateutil,
-    safe_eval,
-    time as safe_time,
-)
+from odoo.tools.safe_eval import safe_eval
 
 from .accounting_none import AccountingNone
 from .aep import AccountingExpressionProcessor as AEP
@@ -78,12 +73,13 @@ class MisReportKpi(models.Model):
     _name = "mis.report.kpi"
     _description = "MIS Report KPI"
 
-    name = fields.Char(required=True)
-    description = fields.Char(required=True, translate=True)
+    name = fields.Char(required=True, string="Name")
+    description = fields.Char(required=True, string="Description", translate=True)
     multi = fields.Boolean()
     expression = fields.Char(
         compute="_compute_expression",
         inverse="_inverse_expression",
+        string="Expression",
     )
     expression_ids = fields.One2many(
         comodel_name="mis.report.kpi.expression",
@@ -101,6 +97,7 @@ class MisReportKpi(models.Model):
         string="Style", comodel_name="mis.report.style", required=False
     )
     style_expression = fields.Char(
+        string="Style expression",
         help="An expression that returns a style depending on the KPI value. "
         "Such style is applied on top of the row style.",
     )
@@ -127,6 +124,7 @@ class MisReportKpi(models.Model):
     accumulation_method = fields.Selection(
         [(ACC_SUM, _("Sum")), (ACC_AVG, _("Average")), (ACC_NONE, _("None"))],
         required=True,
+        string="Accumulation Method",
         default=ACC_SUM,
         help="Determines how values of this kpi spanning over a "
         "time period are transformed to match the reporting period. "
@@ -136,8 +134,10 @@ class MisReportKpi(models.Model):
         "Average: values of included period are averaged "
         "with a pro-rata temporis weight.",
     )
-    sequence = fields.Integer(default=100)
-    report_id = fields.Many2one("mis.report", required=True, ondelete="cascade")
+    sequence = fields.Integer(string="Sequence", default=100)
+    report_id = fields.Many2one(
+        "mis.report", string="Report", required=True, ondelete="cascade"
+    )
 
     _order = "sequence, id"
 
@@ -211,7 +211,7 @@ class MisReportKpi(models.Model):
 
     @api.onchange("description")
     def _onchange_description(self):
-        """construct name from description"""
+        """ construct name from description """
         if self.description and not self.name:
             self.name = _python_var(self.description)
 
@@ -258,8 +258,8 @@ class MisReportSubkpi(models.Model):
     report_id = fields.Many2one(
         comodel_name="mis.report", required=True, ondelete="cascade"
     )
-    name = fields.Char(required=True)
-    description = fields.Char(required=True, translate=True)
+    name = fields.Char(required=True, string="Name")
+    description = fields.Char(required=True, string="Description", translate=True)
     expression_ids = fields.One2many("mis.report.kpi.expression", "subkpi_id")
 
     @api.constrains("name")
@@ -274,7 +274,7 @@ class MisReportSubkpi(models.Model):
 
     @api.onchange("description")
     def _onchange_description(self):
-        """construct name from description"""
+        """ construct name from description """
         if self.description and not self.name:
             self.name = _python_var(self.description)
 
@@ -369,8 +369,10 @@ class MisReportQuery(models.Model):
             field_names = [field.name for field in record.field_ids]
             record.field_names = ", ".join(field_names)
 
-    name = fields.Char(required=True)
-    model_id = fields.Many2one("ir.model", required=True, ondelete="cascade")
+    name = fields.Char(required=True, string="Name")
+    model_id = fields.Many2one(
+        "ir.model", required=True, string="Model", ondelete="restrict"
+    )
     field_ids = fields.Many2many(
         "ir.model.fields", required=True, string="Fields to fetch"
     )
@@ -384,16 +386,17 @@ class MisReportQuery(models.Model):
             ("min", _("Min")),
             ("max", _("Max")),
         ],
+        string="Aggregate",
     )
     date_field = fields.Many2one(
         comodel_name="ir.model.fields",
         required=True,
         domain=[("ttype", "in", ("date", "datetime"))],
-        ondelete="cascade",
+        ondelete="restrict",
     )
-    domain = fields.Char()
+    domain = fields.Char(string="Domain")
     report_id = fields.Many2one(
-        comodel_name="mis.report", required=True, ondelete="cascade"
+        comodel_name="mis.report", string="Report", required=True, ondelete="cascade"
     )
 
     _order = "name"
@@ -427,10 +430,10 @@ class MisReport(models.Model):
     _description = "MIS Report Template"
 
     def _default_move_lines_source(self):
-        return self.env["ir.model"].sudo().search([("model", "=", "account.move.line")])
+        return self.env["ir.model"].search([("model", "=", "account.move.line")])
 
-    name = fields.Char(required=True, translate=True)
-    description = fields.Char(required=False, translate=True)
+    name = fields.Char(required=True, string="Name", translate=True)
+    description = fields.Char(required=False, string="Description", translate=True)
     style_id = fields.Many2one(string="Style", comodel_name="mis.report.style")
     query_ids = fields.One2many(
         "mis.report.query", "report_id", string="Queries", copy=True
@@ -449,6 +452,7 @@ class MisReport(models.Model):
     )
     move_lines_source = fields.Many2one(
         comodel_name="ir.model",
+        string="Move lines source",
         domain=[
             ("field_id.name", "=", "debit"),
             ("field_id.name", "=", "credit"),
@@ -458,12 +462,13 @@ class MisReport(models.Model):
         ],
         default=_default_move_lines_source,
         required=True,
-        ondelete="cascade",
         help="A 'move line like' model, ie having at least debit, credit, "
         "date, account_id and company_id fields. This model is the "
         "data source for column Actuals.",
     )
-    account_model = fields.Char(compute="_compute_account_model")
+    account_model = fields.Char(
+        compute="_compute_account_model", string="Account model"
+    )
 
     @api.depends("kpi_ids", "subreport_ids")
     def _compute_all_kpi_ids(self):
@@ -475,11 +480,9 @@ class MisReport(models.Model):
     @api.depends("move_lines_source")
     def _compute_account_model(self):
         for record in self:
-            record.account_model = (
-                record.move_lines_source.sudo()
-                .field_id.filtered(lambda r: r.name == "account_id")
-                .relation
-            )
+            record.account_model = record.move_lines_source.field_id.filtered(
+                lambda r: r.name == "account_id"
+            ).relation
 
     @api.onchange("subkpi_ids")
     def _on_change_subkpi_ids(self):
@@ -505,10 +508,10 @@ class MisReport(models.Model):
                 kpi.expression_ids = expressions
 
     def get_wizard_report_action(self):
-        xmlid = "mis_builder.mis_report_instance_view_action"
-        action = self.env["ir.actions.act_window"]._for_xml_id(xmlid)
+        action = self.env.ref("mis_builder.mis_report_instance_view_action")
+        res = action.read()[0]
         view = self.env.ref("mis_builder.wizard_mis_report_instance_view_form")
-        action.update(
+        res.update(
             {
                 "view_id": view.id,
                 "views": [(view.id, "form")],
@@ -520,13 +523,13 @@ class MisReport(models.Model):
                 },
             }
         )
-        return action
+        return res
 
     def copy(self, default=None):
         self.ensure_one()
         default = dict(default or [])
         default["name"] = _("%s (copy)") % self.name
-        new = super().copy(default)
+        new = super(MisReport, self).copy(default)
         # after a copy, we have new subkpis, but the expressions
         # subkpi_id fields still point to the original one, so
         # we patch them after copying
@@ -577,13 +580,12 @@ class MisReport(models.Model):
         self.ensure_one()
         res = {}
         for query in self.query_ids:
-            query_sudo = query.sudo()
-            model = self.env[query_sudo.model_id.model]
+            model = self.env[query.model_id.model]
             eval_context = {
                 "env": self.env,
-                "time": safe_time,
-                "datetime": safe_datetime,
-                "dateutil": safe_dateutil,
+                "time": time,
+                "datetime": datetime,
+                "dateutil": dateutil,
                 # deprecated
                 "uid": self.env.uid,
                 "context": self.env.context,
@@ -591,11 +593,11 @@ class MisReport(models.Model):
             domain = query.domain and safe_eval(query.domain, eval_context) or []
             if get_additional_query_filter:
                 domain.extend(get_additional_query_filter(query))
-            if query_sudo.date_field.ttype == "date":
+            if query.date_field.ttype == "date":
                 domain.extend(
                     [
-                        (query_sudo.date_field.name, ">=", date_from),
-                        (query_sudo.date_field.name, "<=", date_to),
+                        (query.date_field.name, ">=", date_from),
+                        (query.date_field.name, "<=", date_to),
                     ]
                 )
             else:
@@ -604,11 +606,11 @@ class MisReport(models.Model):
                 datetime_to = _utc_midnight(date_to, tz, add_day=1)
                 domain.extend(
                     [
-                        (query_sudo.date_field.name, ">=", datetime_from),
-                        (query_sudo.date_field.name, "<", datetime_to),
+                        (query.date_field.name, ">=", datetime_from),
+                        (query.date_field.name, "<", datetime_to),
                     ]
                 )
-            field_names = [f.name for f in query_sudo.field_ids]
+            field_names = [f.name for f in query.field_ids]
             all_stored = all([model._fields[f].store for f in field_names])
             if not query.aggregate:
                 data = model.search_read(domain, field_names)
@@ -788,6 +790,7 @@ class MisReport(models.Model):
         aep,
         date_from,
         date_to,
+        target_move,
         subkpis_filter=None,
         get_additional_move_line_filter=None,
         get_additional_query_filter=None,
@@ -803,6 +806,7 @@ class MisReport(models.Model):
             aep,
             date_from,
             date_to,
+            target_move,
             get_additional_move_line_filter()
             if get_additional_move_line_filter
             else None,
@@ -896,7 +900,7 @@ class MisReport(models.Model):
         )
 
     def get_kpis_by_account_id(self, company):
-        """Return { account_id: set(kpi) }"""
+        """ Return { account_id: set(kpi) } """
         aep = self._prepare_aep(company)
         res = defaultdict(set)
         for kpi in self.kpi_ids:
@@ -907,31 +911,6 @@ class MisReport(models.Model):
                 for account_id in account_ids:
                     res[account_id].add(kpi)
         return res
-
-    @api.model
-    def _supports_target_move_filter(self, aml_model_name):
-        return "parent_state" in self.env[aml_model_name]._fields
-
-    @api.model
-    def _get_target_move_domain(self, target_move, aml_model_name):
-        """
-        Obtain a domain to apply on a move-line-like model, to get posted
-        entries or return all of them (always excluding cancelled entries).
-
-        :param: target_move: all|posted
-        :param: aml_model_name: an optional move-line-like model name
-                (defaults to accaount.move.line)
-        """
-        if not self._supports_target_move_filter(aml_model_name):
-            return []
-
-        if target_move == "posted":
-            return [("parent_state", "=", "posted")]
-        elif target_move == "all":
-            # all (in Odoo 13+, there is also the cancel state that we must ignore)
-            return [("parent_state", "in", ("posted", "draft"))]
-        else:
-            raise UserError(_("Unexpected value %s for target_move.") % (target_move,))
 
     def evaluate(
         self,
@@ -951,7 +930,7 @@ class MisReport(models.Model):
         :param date_from, date_to: the starting and ending date
         :param target_move: all|posted
         :param aml_model: the name of a model that is compatible with
-                          account.move.line (default: account.move.line)
+                          account.move.line
         :param subkpis_filter: a list of subkpis to include in the evaluation
                                (if empty, use all subkpis)
         :param get_additional_move_line_filter: a bound method that takes
@@ -967,21 +946,17 @@ class MisReport(models.Model):
                  these should be ignored as they might be removed in
                  the future.
         """
-        additional_move_line_filter = self._get_target_move_domain(
-            target_move, aml_model or "account.move.line"
-        )
-        if get_additional_move_line_filter:
-            additional_move_line_filter.extend(get_additional_move_line_filter())
         expression_evaluator = ExpressionEvaluator(
             aep,
             date_from,
             date_to,
-            additional_move_line_filter,
+            target_move,
+            get_additional_move_line_filter()
+            if get_additional_move_line_filter
+            else None,
             aml_model,
         )
-        return self._evaluate(
-            expression_evaluator, subkpis_filter, get_additional_query_filter
-        )
+        return self._evaluate(expression_evaluator, subkpis_filter)
 
     def _evaluate(
         self,

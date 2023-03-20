@@ -14,13 +14,13 @@ MIS Builder Budget
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 .. |badge3| image:: https://img.shields.io/badge/github-OCA%2Fmis--builder-lightgray.png?logo=github
-    :target: https://github.com/OCA/mis-builder/tree/15.0/mis_builder_budget
+    :target: https://github.com/OCA/mis-builder/tree/12.0/mis_builder_budget
     :alt: OCA/mis-builder
 .. |badge4| image:: https://img.shields.io/badge/weblate-Translate%20me-F47D42.png
-    :target: https://translation.odoo-community.org/projects/mis-builder-15-0/mis-builder-15-0-mis_builder_budget
+    :target: https://translation.odoo-community.org/projects/mis-builder-12-0/mis-builder-12-0-mis_builder_budget
     :alt: Translate me on Weblate
 .. |badge5| image:: https://img.shields.io/badge/runbot-Try%20me-875A7B.png
-    :target: https://runbot.odoo-community.org/runbot/248/15.0
+    :target: https://runbot.odoo-community.org/runbot/248/12.0
     :alt: Try me on Runbot
 
 |badge1| |badge2| |badge3| |badge4| |badge5| 
@@ -85,37 +85,7 @@ be found on GitHub.
 Changelog
 =========
 
-15.0.4.0.2 (2023-01-27)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-**Bugfixes**
-
-- Fix display of budgets in presence of sub KPIs. (`#428 <https://github.com/OCA/mis-builder/issues/428>`_)
-
-
-14.0.4.0.0 (2022-01-08)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-**Features**
-
-- A label field has been added to MIS Budget by Account items. When overlap between budget
-  items is allowed this allows creating a budget with several contributions for a given
-  account. (`#382 <https://github.com/OCA/mis-builder/issues/382>`_)
-- The balance field on MIS Budget by Account items is now writeable. This allows for
-  easier data entry and import. (`#383 <https://github.com/OCA/mis-builder/issues/383>`_)
-- MIS Budget by Account can now be configured to allow budget items with overlapping
-  dates. Each overlapping item contributes to the budget of the corresponding period. (`#384 <https://github.com/OCA/mis-builder/issues/384>`_)
-
-
-14.0.3.5.1 (2021-04-06)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-**Bugfixes**
-
-- Fix incorrect budget by account multi company security rules. (`#347 <https://github.com/OCA/mis-builder/issues/347>`_)
-
-
-13.0.3.5.0 (2020-03-28)
+12.0.3.5.0 (2020-03-28)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 **Features**
@@ -125,11 +95,6 @@ Changelog
   date, and when reporting a pro-rata temporis adjustment is made to match
   the reporting period. (`#259 <https://github.com/OCA/mis-builder/issues/259>`_)
 
-
-13.0.3.4.0 (2020-01-??)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Migration to odoo 13.0.
 
 12.0.3.4.0 (2019-10-26)
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -187,7 +152,7 @@ Bug Tracker
 Bugs are tracked on `GitHub Issues <https://github.com/OCA/mis-builder/issues>`_.
 In case of trouble, please check there if your issue has already been reported.
 If you spotted it first, help us smashing it by providing a detailed and welcomed
-`feedback <https://github.com/OCA/mis-builder/issues/new?body=module:%20mis_builder_budget%0Aversion:%2015.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
+`feedback <https://github.com/OCA/mis-builder/issues/new?body=module:%20mis_builder_budget%0Aversion:%2012.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
 
 Do not contact contributors directly about support or help with technical issues.
 
@@ -228,6 +193,6 @@ Current `maintainer <https://odoo-community.org/page/maintainer-role>`__:
 
 |maintainer-sbidoul| 
 
-This module is part of the `OCA/mis-builder <https://github.com/OCA/mis-builder/tree/15.0/mis_builder_budget>`_ project on GitHub.
+This module is part of the `OCA/mis-builder <https://github.com/OCA/mis-builder/tree/12.0/mis_builder_budget>`_ project on GitHub.
 
 You are welcome to contribute. To learn how please visit https://odoo-community.org/page/Contribute.

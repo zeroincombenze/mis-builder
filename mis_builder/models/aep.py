@@ -1,22 +1,32 @@
 # Copyright 2014 ACSONE SA/NV (<http://acsone.eu>)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
+import datetime
 import re
+import time
 from collections import defaultdict
+
+import dateutil
 
 from odoo import _, fields
 from odoo.exceptions import UserError
 from odoo.models import expression
 from odoo.tools.float_utils import float_is_zero
-from odoo.tools.safe_eval import datetime, dateutil, safe_eval, time
+from odoo.tools.safe_eval import safe_eval
 
 from .accounting_none import AccountingNone
+
+try:
+    import itertools.izip as zip
+except ImportError:
+    pass  # python 3
+
 
 _DOMAIN_START_RE = re.compile(r"\(|(['\"])[!&|]\1")
 
 
 def _is_domain(s):
-    """Test if a string looks like an Odoo domain"""
+    """ Test if a string looks like an Odoo domain """
     return _DOMAIN_START_RE.match(s)
 
 
@@ -183,7 +193,7 @@ class AccountingExpressionProcessor(object):
                 self._map_account_ids[key].add(acc_domain)
 
     def done_parsing(self):
-        """Replace account domains by account ids in map"""
+        """ Replace account domains by account ids in map """
         for key, acc_domains in self._map_account_ids.items():
             all_account_ids = set()
             for acc_domain in acc_domains:
@@ -211,7 +221,9 @@ class AccountingExpressionProcessor(object):
             account_ids.update(self._account_ids_by_acc_domain[acc_domain])
         return account_ids
 
-    def get_aml_domain_for_expr(self, expr, date_from, date_to, account_id=None):
+    def get_aml_domain_for_expr(
+        self, expr, date_from, date_to, target_move, account_id=None
+    ):
         """Get a domain on account.move.line for an expression.
 
         Prerequisite: done_parsing() must have been invoked.
@@ -240,14 +252,14 @@ class AccountingExpressionProcessor(object):
             aml_domains.append(expression.normalize_domain(aml_domain))
             if mode not in date_domain_by_mode:
                 date_domain_by_mode[mode] = self.get_aml_domain_for_dates(
-                    date_from, date_to, mode
+                    date_from, date_to, mode, target_move
                 )
         assert aml_domains
         # TODO we could do this for more precision:
         #      AND(OR(aml_domains[mode]), date_domain[mode]) for each mode
         return expression.OR(aml_domains) + expression.OR(date_domain_by_mode.values())
 
-    def get_aml_domain_for_dates(self, date_from, date_to, mode):
+    def get_aml_domain_for_dates(self, date_from, date_to, mode, target_move):
         if mode == self.MODE_VARIATION:
             domain = [("date", ">=", date_from), ("date", "<=", date_to)]
         elif mode in (self.MODE_INITIAL, self.MODE_END):
@@ -263,7 +275,7 @@ class AccountingExpressionProcessor(object):
             domain = [
                 "|",
                 ("date", ">=", fields.Date.to_string(fy_date_from)),
-                ("account_id.user_type_id.include_initial_balance", "=", True),
+                ("user_type_id.include_initial_balance", "=", True),
             ]
             if mode == self.MODE_INITIAL:
                 domain.append(("date", "<", date_from))
@@ -280,6 +292,8 @@ class AccountingExpressionProcessor(object):
                 ("date", "<", fields.Date.to_string(fy_date_from)),
                 ("account_id.user_type_id.include_initial_balance", "=", False),
             ]
+        if target_move == "posted":
+            domain.append(("move_id.state", "=", "posted"))
         return expression.normalize_domain(domain)
 
     def _get_company_rates(self, date):
@@ -298,6 +312,7 @@ class AccountingExpressionProcessor(object):
         self,
         date_from,
         date_to,
+        target_move="posted",
         additional_move_line_filter=None,
         aml_model=None,
     ):
@@ -324,7 +339,7 @@ class AccountingExpressionProcessor(object):
                 continue
             if mode not in domain_by_mode:
                 domain_by_mode[mode] = self.get_aml_domain_for_dates(
-                    date_from, date_to, mode
+                    date_from, date_to, mode, target_move
                 )
             domain = list(domain) + domain_by_mode[mode]
             domain.append(("account_id", "in", self._map_account_ids[key]))
@@ -461,7 +476,7 @@ class AccountingExpressionProcessor(object):
             yield account_id, [self._ACC_RE.sub(f, expr) for expr in exprs]
 
     @classmethod
-    def _get_balances(cls, mode, companies, date_from, date_to):
+    def _get_balances(cls, mode, companies, date_from, date_to, target_move="posted"):
         expr = "deb{mode}[], crd{mode}[]".format(mode=mode)
         aep = AccountingExpressionProcessor(companies)
         # disable smart_end to have the data at once, instead
@@ -469,11 +484,11 @@ class AccountingExpressionProcessor(object):
         aep.smart_end = False
         aep.parse_expr(expr)
         aep.done_parsing()
-        aep.do_queries(date_from, date_to)
+        aep.do_queries(date_from, date_to, target_move)
         return aep._data[((), mode)]
 
     @classmethod
-    def get_balances_initial(cls, companies, date):
+    def get_balances_initial(cls, companies, date, target_move="posted"):
         """A convenience method to obtain the initial balances of all accounts
         at a given date.
 
@@ -481,13 +496,14 @@ class AccountingExpressionProcessor(object):
 
         :param companies:
         :param date:
+        :param target_move: if 'posted', consider only posted moves
 
         Returns a dictionary: {account_id, (debit, credit)}
         """
-        return cls._get_balances(cls.MODE_INITIAL, companies, date, date)
+        return cls._get_balances(cls.MODE_INITIAL, companies, date, date, target_move)
 
     @classmethod
-    def get_balances_end(cls, companies, date):
+    def get_balances_end(cls, companies, date, target_move="posted"):
         """A convenience method to obtain the ending balances of all accounts
         at a given date.
 
@@ -495,34 +511,43 @@ class AccountingExpressionProcessor(object):
 
         :param companies:
         :param date:
+        :param target_move: if 'posted', consider only posted moves
 
         Returns a dictionary: {account_id, (debit, credit)}
         """
-        return cls._get_balances(cls.MODE_END, companies, date, date)
+        return cls._get_balances(cls.MODE_END, companies, date, date, target_move)
 
     @classmethod
-    def get_balances_variation(cls, companies, date_from, date_to):
+    def get_balances_variation(
+        cls, companies, date_from, date_to, target_move="posted"
+    ):
         """A convenience method to obtain the variation of the
         balances of all accounts over a period.
 
         :param companies:
         :param date:
+        :param target_move: if 'posted', consider only posted moves
 
         Returns a dictionary: {account_id, (debit, credit)}
         """
-        return cls._get_balances(cls.MODE_VARIATION, companies, date_from, date_to)
+        return cls._get_balances(
+            cls.MODE_VARIATION, companies, date_from, date_to, target_move
+        )
 
     @classmethod
-    def get_unallocated_pl(cls, companies, date):
+    def get_unallocated_pl(cls, companies, date, target_move="posted"):
         """A convenience method to obtain the unallocated profit/loss
         of the previous fiscal years at a given date.
 
         :param companies:
         :param date:
+        :param target_move: if 'posted', consider only posted moves
 
         Returns a tuple (debit, credit)
         """
         # TODO shoud we include here the accounts of type "unaffected"
         # or leave that to the caller?
-        bals = cls._get_balances(cls.MODE_UNALLOCATED, companies, date, date)
+        bals = cls._get_balances(
+            cls.MODE_UNALLOCATED, companies, date, date, target_move
+        )
         return tuple(map(sum, zip(*bals.values())))

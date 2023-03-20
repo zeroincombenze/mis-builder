@@ -13,7 +13,7 @@ from ..models.aep import AccountingExpressionProcessor as AEP
 
 class TestMultiCompanyAEP(common.TransactionCase):
     def setUp(self):
-        super().setUp()
+        super(TestMultiCompanyAEP, self).setUp()
         self.res_company = self.env["res.company"]
         self.account_model = self.env["account.account"]
         self.move_model = self.env["account.move"]
@@ -21,12 +21,8 @@ class TestMultiCompanyAEP(common.TransactionCase):
         self.currency_model = self.env["res.currency"]
         self.curr_year = datetime.date.today().year
         self.prev_year = self.curr_year - 1
-        self.usd = self.currency_model.with_context(active_test=False).search(
-            [("name", "=", "USD")]
-        )
-        self.eur = self.currency_model.with_context(active_test=False).search(
-            [("name", "=", "EUR")]
-        )
+        self.usd = self.currency_model.search([("name", "=", "USD")])
+        self.eur = self.currency_model.search([("name", "=", "EUR")])
         # create company A and B
         self.company_eur = self.res_company.create(
             {"name": "CYEUR", "currency_id": self.eur.id}
@@ -119,7 +115,7 @@ class TestMultiCompanyAEP(common.TransactionCase):
                 ],
             }
         )
-        move._post()
+        move.post()
         return move
 
     def _do_queries(self, companies, currency, date_from, date_to):
@@ -143,6 +139,7 @@ class TestMultiCompanyAEP(common.TransactionCase):
         aep.do_queries(
             date_from=fields.Date.to_string(date_from),
             date_to=fields.Date.to_string(date_to),
+            target_move="posted",
         )
         return aep
 
@@ -192,6 +189,8 @@ class TestMultiCompanyAEP(common.TransactionCase):
         self.env["res.currency.rate"].create(
             dict(currency_id=self.usd.id, name=today, rate=1.2)
         )
+        self.assertAlmostEqual(1.1, self.usd.with_context(date=date_to).rate)
+        self.assertAlmostEqual(1.2, self.usd.with_context(date=today).rate)
         # let's query for december, one company, default currency = eur
         aep = self._do_queries(self.company_eur, None, date_from, date_to)
         self.assertEqual(self._eval(aep, "balp[700IN]"), -100)

@@ -19,13 +19,13 @@ from datetime import datetime
 
 # -- Project information -----------------------------------------------------
 
-project = "MIS Builder"
+project = u"MIS Builder"
 year = datetime.now().year
-copyright = "%s, Odoo Community Association (OCA)" % year
-author = "Odoo Community Association (OCA)"
+copyright = u"%s, Odoo Community Association (OCA)" % year
+author = u"Odoo Community Association (OCA)"
 
 # The short X.Y version
-version = "3.2"
+version = u"3.2"
 # The full version, including alpha/beta/rc tags
 release = version
 
@@ -63,7 +63,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = [u"_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
@@ -145,8 +145,8 @@ latex_documents = [
     (
         master_doc,
         "MISBuilder.tex",
-        "MIS Builder Documentation",
-        "Odoo Community Association (OCA)",
+        u"MIS Builder Documentation",
+        u"Odoo Community Association (OCA)",
         "manual",
     )
 ]
@@ -156,7 +156,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "misbuilder", "MIS Builder Documentation", [author], 1)]
+man_pages = [(master_doc, "misbuilder", u"MIS Builder Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------------
@@ -168,7 +168,7 @@ texinfo_documents = [
     (
         master_doc,
         "MISBuilder",
-        "MIS Builder Documentation",
+        u"MIS Builder Documentation",
         author,
         "MISBuilder",
         "One line description of project.",

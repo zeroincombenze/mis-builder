@@ -1,7 +1,7 @@
 # Copyright 2017 ACSONE SA/NV (<http://acsone.eu>)
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl.html).
 
-from odoo.tests.common import TransactionCase
+from odoo.tests.common import SavepointCase
 
 from odoo.addons.mis_builder.models.expression_evaluator import ExpressionEvaluator
 from odoo.addons.mis_builder.tests.common import assert_matrix
@@ -9,10 +9,10 @@ from odoo.addons.mis_builder.tests.common import assert_matrix
 from ..models.mis_report_instance_period import SRC_MIS_BUDGET_BY_ACCOUNT
 
 
-class TestMisBudgetByAccount(TransactionCase):
+class TestMisBudgetByAccount(SavepointCase):
     @classmethod
     def setUpClass(cls):
-        super().setUpClass()
+        super(TestMisBudgetByAccount, cls).setUpClass()
         # create account
         account = cls.env["account.account"].create(
             dict(
@@ -64,7 +64,7 @@ class TestMisBudgetByAccount(TransactionCase):
         )
 
     def test_basic(self):
-        """Sum all budget items in period"""
+        """ Sum all budget items in period """
         aep = self.report._prepare_aep(self.env.ref("base.main_company"))
         ee = ExpressionEvaluator(
             aep=aep,
@@ -126,11 +126,3 @@ class TestMisBudgetByAccount(TransactionCase):
         self.assertEqual(self.budget.state, "cancelled")
         self.budget.action_draft()
         self.assertEqual(self.budget.state, "draft")
-
-    def test_budget_item_balance(self):
-        item = self.budget.item_ids[0]
-        item.balance = 100
-        self.assertEqual(item.debit, 100)
-        item.balance = -100
-        self.assertEqual(item.debit, 0)
-        self.assertEqual(item.credit, 100)

@@ -3,6 +3,11 @@
 
 from .mis_safe_eval import NameDataError, mis_safe_eval
 
+try:
+    import itertools.izip as zip
+except ImportError:
+    pass  # python 3
+
 
 class ExpressionEvaluator(object):
     def __init__(
@@ -10,12 +15,14 @@ class ExpressionEvaluator(object):
         aep,
         date_from,
         date_to,
+        target_move=None,
         additional_move_line_filter=None,
         aml_model=None,
     ):
         self.aep = aep
         self.date_from = date_from
         self.date_to = date_to
+        self.target_move = target_move
         self.additional_move_line_filter = additional_move_line_filter
         self.aml_model = aml_model
         self._aep_queries_done = False
@@ -25,6 +32,7 @@ class ExpressionEvaluator(object):
             self.aep.do_queries(
                 self.date_from,
                 self.date_to,
+                self.target_move,
                 self.additional_move_line_filter,
                 self.aml_model,
             )

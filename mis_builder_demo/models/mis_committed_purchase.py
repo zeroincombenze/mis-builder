@@ -1,9 +1,10 @@
 # Copyright 2017 ACSONE SA/NV
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from os.path import dirname, join as opj
+import os
+from os.path import join as opj
 
-from odoo import fields, models, tools
+from odoo import api, fields, models, tools
 
 
 class MisCommittedPurchase(models.Model):
@@ -23,7 +24,7 @@ class MisCommittedPurchase(models.Model):
     debit = fields.Float()
     date = fields.Date()
 
-    # resource can be purchase.order.line or account.move.line
+    # resource can be purchase.order.line or account.invoice.line
     res_id = fields.Integer(string="Resource ID")
     res_model = fields.Char(string="Resource Model Name")
 
@@ -35,10 +36,9 @@ class MisCommittedPurchase(models.Model):
         string="Analytic Tags",
     )
 
+    @api.model_cr
     def init(self):
-        script = opj(
-            dirname(dirname(__file__)), "examples", "mis_committed_purchase.sql"
-        )
+        script = opj(os.path.dirname(__file__), "mis_committed_purchase.sql")
         with open(script) as f:
             tools.drop_view_if_exists(self.env.cr, "mis_committed_purchase")
             self.env.cr.execute(f.read())
@@ -59,9 +59,9 @@ class MisCommittedPurchase(models.Model):
             SELECT
                 inv_mcp.id AS mis_committed_purchase_id,
                 inv_rel.account_analytic_tag_id AS account_analytic_tag_id
-            FROM account_analytic_tag_account_move_line_rel AS inv_rel
+            FROM account_analytic_tag_account_invoice_line_rel AS inv_rel
             INNER JOIN mis_committed_purchase AS inv_mcp ON
-                inv_mcp.res_id = inv_rel.account_move_line_id
-            WHERE inv_mcp.res_model = 'account.move.line')
+                inv_mcp.res_id = inv_rel.account_invoice_line_id
+            WHERE inv_mcp.res_model = 'account.invoice.line')
             """
             )

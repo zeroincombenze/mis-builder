@@ -3,7 +3,7 @@
 
 {
     "name": "MIS Builder",
-    "version": "15.0.4.1.3",
+    "version": "12.0.3.7.7",
     "category": "Reporting",
     "summary": """
         Build 'Management Information System' Reports and Dashboards
@@ -15,6 +15,7 @@
         "board",
         "report_xlsx",  # OCA/reporting-engine
         "date_range",  # OCA/server-ux
+        "web_widget_color",  # OCA/web
     ],
     "data": [
         "wizard/mis_builder_dashboard.xml",
@@ -27,18 +28,6 @@
         "report/mis_report_instance_qweb.xml",
         "report/mis_report_instance_xlsx.xml",
     ],
-    "assets": {
-        "web.assets_backend": [
-            "mis_builder/static/src/css/custom.css",
-            "mis_builder/static/src/js/mis_report_widget.js",
-        ],
-        "web.report_assets_common": [
-            "/mis_builder/static/src/css/report.css",
-        ],
-        "web.assets_qweb": [
-            "mis_builder/static/src/xml/mis_report_widget.xml",
-        ],
-    },
     "qweb": ["static/src/xml/mis_report_widget.xml"],
     "installable": True,
     "application": True,

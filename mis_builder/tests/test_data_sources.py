@@ -32,11 +32,11 @@ class TestMisReportInstanceDataSources(common.TransactionCase):
                 ],
             }
         )
-        move._post()
+        move.post()
         return move
 
     def setUp(self):
-        super().setUp()
+        super(TestMisReportInstanceDataSources, self).setUp()
         self.account_model = self.env["account.account"]
         self.move_model = self.env["account.move"]
         self.journal_model = self.env["account.journal"]

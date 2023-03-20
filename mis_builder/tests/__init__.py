@@ -13,5 +13,4 @@ from . import test_mis_safe_eval
 from . import test_period_dates
 from . import test_render
 from . import test_simple_array
-from . import test_target_move
 from . import test_utc_midnight

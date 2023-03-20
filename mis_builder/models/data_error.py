@@ -5,7 +5,7 @@
 
 class DataError(Exception):
     def __init__(self, name, msg):
-        super().__init__()
+        super(DataError, self).__init__()
         self.name = name
         self.msg = msg
 

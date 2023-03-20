@@ -48,7 +48,6 @@
                         <field name="date_range_id" />
                         <field name="date_from" />
                         <field name="date_to" />
-                        <field name="allow_items_overlap" />
                     </group>
                 </sheet>
                 <div class="oe_chatter">

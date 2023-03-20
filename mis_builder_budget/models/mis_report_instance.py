@@ -1,7 +1,7 @@
 # Copyright 2017 ACSONE SA/NV
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import api, models
+from odoo import models
 from odoo.osv.expression import AND
 
 from odoo.addons.mis_builder.models.accounting_none import AccountingNone
@@ -12,39 +12,29 @@ from .mis_report_instance_period import SRC_MIS_BUDGET, SRC_MIS_BUDGET_BY_ACCOUN
 
 class MisBudgetAwareExpressionEvaluator(ExpressionEvaluator):
     def __init__(self, date_from, date_to, kpi_data, additional_move_line_filter):
-        super().__init__(
+        super(MisBudgetAwareExpressionEvaluator, self).__init__(
             aep=None,
             date_from=date_from,
             date_to=date_to,
+            target_move=None,
             additional_move_line_filter=additional_move_line_filter,
             aml_model=None,
         )
         self.kpi_data = kpi_data
 
-    @api.model
-    def _get_kpi_for_expressions(self, expressions):
-        kpi = None
-        for expression in expressions:
-            if not expression:
-                continue
-            if kpi is None:
-                kpi = expression.kpi_id
-            else:
-                assert (
-                    kpi == expression.kpi_id
-                ), "expressions must belong to the same kpi"
-        return kpi
-
     def eval_expressions(self, expressions, locals_dict):
-        kpi = self._get_kpi_for_expressions(expressions)
-        if kpi and kpi.budgetable:
+        kpi_id = expressions.mapped("kpi_id")
+        assert len(kpi_id) == 1
+        if kpi_id.budgetable:
             vals = []
             drilldown_args = []
             for expression in expressions:
                 vals.append(self.kpi_data.get(expression, AccountingNone))
                 drilldown_args.append({"expr_id": expression.id})
             return vals, drilldown_args, False
-        return super().eval_expressions(expressions, locals_dict)
+        return super(MisBudgetAwareExpressionEvaluator, self).eval_expressions(
+            expressions, locals_dict
+        )
 
 
 class MisReportInstance(models.Model):
@@ -91,7 +81,9 @@ class MisReportInstance(models.Model):
                 aep, kpi_matrix, period, label, description
             )
         else:
-            return super()._add_column(aep, kpi_matrix, period, label, description)
+            return super(MisReportInstance, self)._add_column(
+                aep, kpi_matrix, period, label, description
+            )
 
     def drilldown(self, arg):
         self.ensure_one()
@@ -115,7 +107,8 @@ class MisReportInstance(models.Model):
                     "type": "ir.actions.act_window",
                     "res_model": "mis.budget.item",
                     "views": [[False, "list"], [False, "form"]],
+                    "view_type": "list",
                     "view_mode": "list",
                     "target": "current",
                 }
-        return super().drilldown(arg)
+        return super(MisReportInstance, self).drilldown(arg)

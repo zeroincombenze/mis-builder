@@ -14,7 +14,7 @@ from ..models.aep import AccountingExpressionProcessor as AEP, _is_domain
 
 class TestAEP(common.TransactionCase):
     def setUp(self):
-        super().setUp()
+        super(TestAEP, self).setUp()
         self.res_company = self.env["res.company"]
         self.account_model = self.env["account.account"]
         self.move_model = self.env["account.move"]
@@ -125,13 +125,14 @@ class TestAEP(common.TransactionCase):
             }
         )
         if post:
-            move._post()
+            move.post()
         return move
 
     def _do_queries(self, date_from, date_to):
         self.aep.do_queries(
             date_from=fields.Date.to_string(date_from),
             date_to=fields.Date.to_string(date_to),
+            target_move="posted",
         )
 
     def _eval(self, expr):
@@ -147,7 +148,7 @@ class TestAEP(common.TransactionCase):
 
     def test_sanity_check(self):
         self.assertEqual(self.company.fiscalyear_last_day, 31)
-        self.assertEqual(self.company.fiscalyear_last_month, "12")
+        self.assertEqual(self.company.fiscalyear_last_month, 12)
 
     def test_aep_basic(self):
         self.aep.done_parsing()
@@ -246,7 +247,9 @@ class TestAEP(common.TransactionCase):
             datetime.date(self.curr_year, 3, 1), datetime.date(self.curr_year, 3, 31)
         )
         variation = self._eval_by_account_id("balp[]")
-        self.assertEqual(variation, {self.account_ar.id: 500, self.account_in.id: -500})
+        self.assertEqual(
+            variation, {self.account_ar.id: 500, self.account_in.id: -500}
+        )
         variation = self._eval_by_account_id("pbalp[]")
         self.assertEqual(
             variation, {self.account_ar.id: 500, self.account_in.id: AccountingNone}
@@ -258,12 +261,16 @@ class TestAEP(common.TransactionCase):
         variation = self._eval_by_account_id("balp[700IN]")
         self.assertEqual(variation, {self.account_in.id: -500})
         variation = self._eval_by_account_id("crdp[700IN] - debp[400AR]")
-        self.assertEqual(variation, {self.account_ar.id: -500, self.account_in.id: 500})
+        self.assertEqual(
+            variation, {self.account_ar.id: -500, self.account_in.id: 500}
+        )
         end = self._eval_by_account_id("bale[]")
         self.assertEqual(end, {self.account_ar.id: 900, self.account_in.id: -800})
 
     def test_aep_convenience_methods(self):
-        initial = AEP.get_balances_initial(self.company, time.strftime("%Y") + "-03-01")
+        initial = AEP.get_balances_initial(
+            self.company, time.strftime("%Y") + "-03-01", "posted"
+        )
         self.assertEqual(
             initial, {self.account_ar.id: (400, 0), self.account_in.id: (0, 300)}
         )
@@ -271,16 +278,19 @@ class TestAEP(common.TransactionCase):
             self.company,
             time.strftime("%Y") + "-03-01",
             time.strftime("%Y") + "-03-31",
+            "posted",
         )
         self.assertEqual(
             variation, {self.account_ar.id: (500, 0), self.account_in.id: (0, 500)}
         )
-        end = AEP.get_balances_end(self.company, time.strftime("%Y") + "-03-31")
+        end = AEP.get_balances_end(
+            self.company, time.strftime("%Y") + "-03-31", "posted"
+        )
         self.assertEqual(
             end, {self.account_ar.id: (900, 0), self.account_in.id: (0, 800)}
         )
         unallocated = AEP.get_unallocated_pl(
-            self.company, time.strftime("%Y") + "-03-15"
+            self.company, time.strftime("%Y") + "-03-15", "posted"
         )
         self.assertEqual(unallocated, (0, 100))
 
@@ -294,7 +304,9 @@ class TestAEP(common.TransactionCase):
             debit_acc=self.account_in,
             credit_acc=self.account_ar,
         )
-        initial = AEP.get_balances_initial(self.company, time.strftime("%Y") + "-01-01")
+        initial = AEP.get_balances_initial(
+            self.company, time.strftime("%Y") + "-01-01", "posted"
+        )
         self.assertEqual(initial, {self.account_ar.id: (100.00, 100.01)})
         # make initial balance at Jan 1st equal to 0.001
         self._create_move(
@@ -303,7 +315,9 @@ class TestAEP(common.TransactionCase):
             debit_acc=self.account_ar,
             credit_acc=self.account_in,
         )
-        initial = AEP.get_balances_initial(self.company, time.strftime("%Y") + "-01-01")
+        initial = AEP.get_balances_initial(
+            self.company, time.strftime("%Y") + "-01-01", "posted"
+        )
         # epsilon initial balances is reported as empty
         self.assertEqual(initial, {})
 
@@ -322,18 +336,24 @@ class TestAEP(common.TransactionCase):
     def test_get_aml_domain_for_expr(self):
         self.aep.done_parsing()
         expr = "balp[700IN]"
-        domain = self.aep.get_aml_domain_for_expr(expr, "2017-01-01", "2017-03-31")
+        domain = self.aep.get_aml_domain_for_expr(
+            expr, "2017-01-01", "2017-03-31", target_move="posted"
+        )
         self.assertEqual(
             domain,
             [
                 ("account_id", "in", (self.account_in.id,)),
                 "&",
+                "&",
                 ("date", ">=", "2017-01-01"),
                 ("date", "<=", "2017-03-31"),
+                ("move_id.state", "=", "posted"),
             ],
         )
         expr = "debi[700IN] - crdi[400AR]"
-        domain = self.aep.get_aml_domain_for_expr(expr, "2017-02-01", "2017-03-31")
+        domain = self.aep.get_aml_domain_for_expr(
+            expr, "2017-02-01", "2017-03-31", target_move="draft"
+        )
         self.assertEqual(
             domain,
             [
@@ -350,7 +370,7 @@ class TestAEP(common.TransactionCase):
                 # for P&L accounts, only after fy start
                 "|",
                 ("date", ">=", "2017-01-01"),
-                ("account_id.user_type_id.include_initial_balance", "=", True),
+                ("user_type_id.include_initial_balance", "=", True),
                 # everything must be before from_date for initial balance
                 ("date", "<", "2017-02-01"),
             ],
@@ -374,7 +394,7 @@ class TestAEP(common.TransactionCase):
         self.aep.done_parsing()
 
         tax = self.env["account.tax"].create(
-            dict(name="test tax", active=True, amount=0, company_id=self.company.id)
+            dict(name="test tax", active=False, amount=0)
         )
         move = self._create_move(
             date=datetime.date(self.prev_year, 12, 1),
@@ -386,8 +406,7 @@ class TestAEP(common.TransactionCase):
         for ml in move.line_ids:
             if ml.credit:
                 ml.write(dict(tax_ids=[(6, 0, [tax.id])]))
-        tax.active = False
-        move._post()
+        move.post()
         # let's query for december 1st
         self._do_queries(
             datetime.date(self.prev_year, 12, 1), datetime.date(self.prev_year, 12, 1)

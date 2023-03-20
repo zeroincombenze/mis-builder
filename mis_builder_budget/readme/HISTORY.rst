@@ -1,34 +1,4 @@
-15.0.4.0.2 (2023-01-27)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-**Bugfixes**
-
-- Fix display of budgets in presence of sub KPIs. (`#428 <https://github.com/OCA/mis-builder/issues/428>`_)
-
-
-14.0.4.0.0 (2022-01-08)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-**Features**
-
-- A label field has been added to MIS Budget by Account items. When overlap between budget
-  items is allowed this allows creating a budget with several contributions for a given
-  account. (`#382 <https://github.com/OCA/mis-builder/issues/382>`_)
-- The balance field on MIS Budget by Account items is now writeable. This allows for
-  easier data entry and import. (`#383 <https://github.com/OCA/mis-builder/issues/383>`_)
-- MIS Budget by Account can now be configured to allow budget items with overlapping
-  dates. Each overlapping item contributes to the budget of the corresponding period. (`#384 <https://github.com/OCA/mis-builder/issues/384>`_)
-
-
-14.0.3.5.1 (2021-04-06)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-**Bugfixes**
-
-- Fix incorrect budget by account multi company security rules. (`#347 <https://github.com/OCA/mis-builder/issues/347>`_)
-
-
-13.0.3.5.0 (2020-03-28)
+12.0.3.5.0 (2020-03-28)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 **Features**
@@ -38,11 +8,6 @@
   date, and when reporting a pro-rata temporis adjustment is made to match
   the reporting period. (`#259 <https://github.com/OCA/mis-builder/issues/259>`_)
 
-
-13.0.3.4.0 (2020-01-??)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Migration to odoo 13.0.
 
 12.0.3.4.0 (2019-10-26)
 ~~~~~~~~~~~~~~~~~~~~~~~

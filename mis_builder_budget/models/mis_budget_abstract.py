@@ -10,21 +10,23 @@ class MisBudgetAbstract(models.AbstractModel):
     _description = "MIS Budget (Abstract Base Class)"
     _inherit = ["mail.thread"]
 
-    name = fields.Char(required=True, tracking=True)
-    description = fields.Char(tracking=True)
+    @api.model
+    def _default_company(self):
+        return self.env["res.company"]._company_default_get("mis.budget")
+
+    name = fields.Char(required=True, track_visibility="onchange")
+    description = fields.Char(track_visibility="onchange")
     date_range_id = fields.Many2one(comodel_name="date.range", string="Date range")
-    date_from = fields.Date(required=True, string="From", tracking=True)
-    date_to = fields.Date(required=True, string="To", tracking=True)
+    date_from = fields.Date(required=True, string="From", track_visibility="onchange")
+    date_to = fields.Date(required=True, string="To", track_visibility="onchange")
     state = fields.Selection(
         [("draft", "Draft"), ("confirmed", "Confirmed"), ("cancelled", "Cancelled")],
         required=True,
         default="draft",
-        tracking=True,
+        track_visibility="onchange",
     )
     company_id = fields.Many2one(
-        comodel_name="res.company",
-        string="Company",
-        default=lambda self: self.env.company,
+        comodel_name="res.company", string="Company", default=_default_company
     )
 
     def copy(self, default=None):
@@ -33,7 +35,7 @@ class MisBudgetAbstract(models.AbstractModel):
             default = {}
         if "name" not in default:
             default["name"] = _("%s (copy)") % self.name
-        return super().copy(default=default)
+        return super(MisBudgetAbstract, self).copy(default=default)
 
     @api.onchange("date_range_id")
     def _onchange_date_range(self):

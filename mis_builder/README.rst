@@ -14,13 +14,13 @@ MIS Builder
     :target: http://www.gnu.org/licenses/agpl-3.0-standalone.html
     :alt: License: AGPL-3
 .. |badge3| image:: https://img.shields.io/badge/github-OCA%2Fmis--builder-lightgray.png?logo=github
-    :target: https://github.com/OCA/mis-builder/tree/15.0/mis_builder
+    :target: https://github.com/OCA/mis-builder/tree/12.0/mis_builder
     :alt: OCA/mis-builder
 .. |badge4| image:: https://img.shields.io/badge/weblate-Translate%20me-F47D42.png
-    :target: https://translation.odoo-community.org/projects/mis-builder-15-0/mis-builder-15-0-mis_builder
+    :target: https://translation.odoo-community.org/projects/mis-builder-12-0/mis-builder-12-0-mis_builder
     :alt: Translate me on Weblate
 .. |badge5| image:: https://img.shields.io/badge/runbot-Try%20me-875A7B.png
-    :target: https://runbot.odoo-community.org/runbot/248/15.0
+    :target: https://runbot.odoo-community.org/runbot/248/12.0
     :alt: Try me on Runbot
 
 |badge1| |badge2| |badge3| |badge4| |badge5| 
@@ -97,23 +97,7 @@ be found on GitHub.
 Changelog
 =========
 
-15.0.4.1.3 (2023-01-27)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-**Bugfixes**
-
-- Fix display of analytic tags in PDF and Excel reports. (`#353 <https://github.com/OCA/mis-builder/issues/353>`_)
-
-
-15.0.4.1.2 (2022-11-15)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-**Bugfixes**
-
-- Fix access error when previewing or printing report. (`#415 <https://github.com/OCA/mis-builder/issues/415>`_)
-
-
-15.0.4.0.5 (2022-07-19)
+12.0.3.7.7 (2022-07-19)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 **Bugfixes**
@@ -121,7 +105,7 @@ Changelog
 - Support users without timezone. (`#388 <https://github.com/OCA/mis-builder/issues/388>`_)
 
 
-15.0.4.0.4 (2022-07-19)
+12.0.3.7.6 (2022-07-19)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 **Bugfixes**
@@ -129,51 +113,16 @@ Changelog
 - Allow deleting a report that has subreports. (`#431 <https://github.com/OCA/mis-builder/issues/431>`_)
 
 
-15.0.4.0.2 (2022-02-16)
-~~~~~~~~~~~~~~~~~~~~~~~
-
+12.0.3.7.3 (2021-12-20)
 **Bugfixes**
 
-- Fix access right issue when clicking the "Save" button on a MIS Report Instance form. (`#410 <https://github.com/OCA/mis-builder/issues/410>`_)
+- [FIX] balu[] and budgets by account
+
+  The balu[] expression (MODE_UNALLOCATED) need a user_type_id One2many to
+  account.account.type. We get it from account_id as in v14 (`#364 <https://github.com/OCA/mis-builder/issues/364>`_)
 
 
-14.0.4.0.0 (2022-01-08)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-**Features**
-
-- Remove various field size limits. (`#332 <https://github.com/OCA/mis-builder/issues/332>`_)
-
-
-**Bugfixes**
-
-- Support for the Odoo 13+ multi-company model. In multi-company mode, several allowed
-  companies can be declared on MIS Report instances, and the report operates on the
-  intersection of report companies and companies selected in the user context. (`#327 <https://github.com/OCA/mis-builder/issues/327>`_)
-- The ``get_additional_query_filter`` argument of ``evaluate()`` is now propagated
-  correctly. (`#375 <https://github.com/OCA/mis-builder/issues/375>`_)
-- Use the ``parent_state`` field of ``account.move.line`` to filter entries in ``posted``
-  and ``draft`` state only. Before, when reporting in draft mode, all entries were used
-  (i.e. there was no filter), and that started including the cancelled entries/invoices in
-  Odoo 13.+.
-
-  This change also contains a **breaking change** in the internal API. For quite a while
-  the ``target_move argument`` of AEP and other methods was not used by MIS Builder itself
-  and was kept for backward compatibility. To avoid rippling effects of the necessary
-  change to use ``parent_state``, we now remove this argument. (`#377 <https://github.com/OCA/mis-builder/issues/377>`_)
-
-
-14.0.3.6.7 (2021-06-02)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-**Bugfixes**
-
-- When on a MIS Report Instance, if you wanted to generate a new line of type comparison, you couldn't currently select any existing period to compare.
-  This happened because the field domain was searching in a NewId context, thus not finding a correct period.
-  Changing the domain and making it use a computed field with a search for the _origin record solves the problem. (`#361 <https://github.com/OCA/mis-builder/issues/361>`_)
-
-
-14.0.3.6.6 (2021-04-23)
+12.0.3.7.1 (2021-04-23)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 **Bugfixes**
@@ -181,17 +130,16 @@ Changelog
 - Fix drilldown action name when the account model has been customized. (`#350 <https://github.com/OCA/mis-builder/issues/350>`_)
 
 
-14.0.3.6.5 (2021-04-23)
+12.0.3.7.0 (2021-02-13)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-**Bugfixes**
+**Features**
 
-- While duplicating a MIS report instance, comparison columns are ignored because
-  they would raise an error otherwise, as they keep the old source_cmpcol_from_id
-  and source_cmpcol_to_id from the original record. (`#343 <https://github.com/OCA/mis-builder/issues/343>`_)
+- Add analytic group filters on report instance, periods and in the interactive
+  view. (`#320 <https://github.com/OCA/mis-builder/issues/320>`_)
 
 
-14.0.3.6.4 (2021-04-06)
+12.0.3.6.4 (2020-11-05)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 **Features**
@@ -199,11 +147,9 @@ Changelog
 - The drilldown action name displayed on the breadcrumb has been revised.
   The kpi description and the account ``display_name`` are shown instead
   of the kpi's technical definition. (`#304 <https://github.com/OCA/mis-builder/issues/304>`_)
-- Add analytic group filters on report instance, periods and in the interactive
-  view. (`#320 <https://github.com/OCA/mis-builder/issues/320>`_)
 
 
-13.0.3.6.3 (2020-08-28)
+12.0.3.6.3 (2020-08-28)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 **Bugfixes**
@@ -218,7 +164,7 @@ Changelog
 - `#280 <https://github.com/OCA/mis-builder/issues/280>`_, `#296 <https://github.com/OCA/mis-builder/issues/296>`_
 
 
-13.0.3.6.2 (2020-04-22)
+12.0.3.6.2 (2020-04-22)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 **Bugfixes**
@@ -226,7 +172,7 @@ Changelog
 - The "Settings" button is now displayed for users with the "Show full accounting features" right when previewing a report. (`#281 <https://github.com/OCA/mis-builder/issues/281>`_)
 
 
-13.0.3.6.1 (2020-04-22)
+12.0.3.6.1 (2020-04-22)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 **Bugfixes**
@@ -235,7 +181,7 @@ Changelog
   budgets by account. (`#276 <https://github.com/OCA/mis-builder/issues/276>`_)
 
 
-13.0.3.6.0 (2020-03-28)
+12.0.3.6.0 (2020-03-28)
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 **Features**
@@ -251,11 +197,6 @@ Changelog
   Sheet" to create new KPI's for the ratios (e.g. balance_sheet.current_assets /
   balance_sheet.total_assets). (`#155 <https://github.com/OCA/mis-builder/issues/155>`_)
 
-
-13.0.3.5.0 (2020-01-??)
-~~~~~~~~~~~~~~~~~~~~~~~
-
-Migration to odoo 13.0.
 
 12.0.3.5.0 (2019-10-26)
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -600,7 +541,7 @@ Bug Tracker
 Bugs are tracked on `GitHub Issues <https://github.com/OCA/mis-builder/issues>`_.
 In case of trouble, please check there if your issue has already been reported.
 If you spotted it first, help us smashing it by providing a detailed and welcomed
-`feedback <https://github.com/OCA/mis-builder/issues/new?body=module:%20mis_builder%0Aversion:%2015.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
+`feedback <https://github.com/OCA/mis-builder/issues/new?body=module:%20mis_builder%0Aversion:%2012.0%0A%0A**Steps%20to%20reproduce**%0A-%20...%0A%0A**Current%20behavior**%0A%0A**Expected%20behavior**>`_.
 
 Do not contact contributors directly about support or help with technical issues.
 
@@ -641,7 +582,6 @@ Contributors
 * `CorporateHub <https://corporatehub.eu/>`__
 
   * Alexey Pelykh <alexey.pelykh@corphub.eu>
-* Jairo Llopis (https://www.moduon.team/)
 
 Maintainers
 ~~~~~~~~~~~
@@ -664,6 +604,6 @@ Current `maintainer <https://odoo-community.org/page/maintainer-role>`__:
 
 |maintainer-sbidoul| 
 
-This module is part of the `OCA/mis-builder <https://github.com/OCA/mis-builder/tree/15.0/mis_builder>`_ project on GitHub.
+This module is part of the `OCA/mis-builder <https://github.com/OCA/mis-builder/tree/12.0/mis_builder>`_ project on GitHub.
 
 You are welcome to contribute. To learn how please visit https://odoo-community.org/page/Contribute.

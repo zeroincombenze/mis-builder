@@ -15,14 +15,10 @@ class MisReportInstancePeriod(models.Model):
         selection_add=[
             (SRC_MIS_BUDGET, "MIS Budget by KPI"),
             (SRC_MIS_BUDGET_BY_ACCOUNT, "MIS Budget by Account"),
-        ],
-        ondelete={
-            SRC_MIS_BUDGET: "cascade",
-            SRC_MIS_BUDGET_BY_ACCOUNT: "cascade",
-        },
+        ]
     )
     source_mis_budget_id = fields.Many2one(
-        comodel_name="mis.budget", string="Budget by KPI"
+        comodel_name="mis.budget", string="Budget by KPI", oldname="source_mis_budget"
     )
     source_mis_budget_by_account_id = fields.Many2one(
         comodel_name="mis.budget.by.account", string="Budget by Account"
@@ -31,10 +27,10 @@ class MisReportInstancePeriod(models.Model):
     def _get_aml_model_name(self):
         if self.source == SRC_MIS_BUDGET_BY_ACCOUNT:
             return "mis.budget.by.account.item"
-        return super()._get_aml_model_name()
+        return super(MisReportInstancePeriod, self)._get_aml_model_name()
 
     def _get_additional_move_line_filter(self):
-        domain = super()._get_additional_move_line_filter()
+        domain = super(MisReportInstancePeriod, self)._get_additional_move_line_filter()
         if self.source == SRC_MIS_BUDGET_BY_ACCOUNT:
             domain.extend([("budget_id", "=", self.source_mis_budget_by_account_id.id)])
         return domain
@@ -54,7 +50,7 @@ class MisReportInstancePeriod(models.Model):
           [(field_name, {'value': value, 'operator': operator})]
 
         This default filter is the same as the one set by
-        _get_additional_move_line_filter on mis.report.instance.period, so
+        _get_additional_move_line_filter on mis.report.instance, so
         a budget.item is expected to have the same analytic fields as
         a move line.
 

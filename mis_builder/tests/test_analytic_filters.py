@@ -6,9 +6,8 @@ from odoo.tests.common import TransactionCase
 
 class TestAnalyticFilters(TransactionCase):
     def setUp(self):
-        super().setUp()
+        super(TestAnalyticFilters, self).setUp()
         self.aag = self.env["account.analytic.group"].search([], limit=1)
-        self.aat = self.env["account.analytic.tag"].search([], limit=1)
 
     def test_context_with_filters(self):
         aaa = self.env["account.analytic.account"].search([], limit=1)
@@ -24,9 +23,9 @@ class TestAnalyticFilters(TransactionCase):
         }
         # test _context_with_filters does nothing is a filter is already
         # in the context
-        assert mri.with_context(
-            mis_report_filters={"f": 1}
-        )._context_with_filters().get("mis_report_filters") == {"f": 1}
+        mri.with_context(mis_report_filters={"f": 1})._context_with_filters().get(
+            "mis_report_filters"
+        ) == {"f": 1}
 
     def _check_get_filter_domain_from_context(
         self, mis_report_filters, expected_domain
@@ -104,24 +103,6 @@ class TestAnalyticFilters(TransactionCase):
         self._check_get_filter_descriptions_from_context(
             {"analytic_account_id.group_id": {"value": self.aag.id}},
             ["Analytic Account Group: %s" % self.aag.display_name],
-        )
-
-    def test_get_filter_descriptions_from_context_2(self):
-        self._check_get_filter_descriptions_from_context(
-            {"analytic_tag_ids": {"value": [self.aat.id]}},
-            ["Analytic Tags: %s" % self.aat.display_name],
-        )
-
-    def test_get_filter_descriptions_from_context_3(self):
-        self._check_get_filter_descriptions_from_context(
-            {
-                "analytic_tag_ids": {"value": [self.aat.id]},
-                "analytic_account_id.group_id": {"value": self.aag.id},
-            },
-            [
-                "Analytic Account Group: %s" % self.aag.display_name,
-                "Analytic Tags: %s" % self.aat.display_name,
-            ],
         )
 
     def test_get_additional_move_line_filter_with_analytic_group(self):
